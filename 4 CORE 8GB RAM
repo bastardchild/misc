@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Backup existing PHP configuration before making changes
+sudo cp /etc/php/8.1/apache2/php.ini /etc/php/8.1/apache2/php.ini.backup-$(date +"%Y%m%d")
+
+# Optimize PHP settings for 4 cores and 8GB RAM
+sudo sed -i "s/^memory_limit = .*/memory_limit = 2048M/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^upload_max_filesize = .*/upload_max_filesize = 200M/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^post_max_size = .*/post_max_size = 200M/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^max_execution_time = .*/max_execution_time = 600/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^max_input_time = .*/max_input_time = 600/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^max_input_vars = .*/max_input_vars = 3000/" /etc/php/8.1/apache2/php.ini
+
+# Restart Apache to apply the PHP changes
+sudo systemctl restart apache2
+
+# Backup the existing MariaDB configuration before changes
+sudo cp /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup-$(date +"%Y%m%d")
+
+# Modify MariaDB settings to optimize for 8GB RAM
+cat <<EOF | sudo tee /etc/mysql/mariadb.conf.d/99-max-memory.cnf
+[mysqld]
+# Increase InnoDB buffer pool to 4GB (4096MB)
+innodb_buffer_pool_size = 4096M
+
+# Increase log buffer size
+innodb_log_buffer_size = 64M
+
+# Enable query cache and increase size
+query_cache_size = 128M
+query_cache_limit = 4M
+
+# Increase temporary table size
+tmp_table_size = 128M
+max_heap_table_size = 128M
+
+# Increase max connections to support more concurrent users
+max_connections = 250
+
+# Increase table cache size
+table_open_cache = 1000
+EOF
+
+# Restart MariaDB to apply the changes
+sudo systemctl restart mariadb
+
+# Modify Apache settings to utilize 4 cores and 8GB RAM
+cat <<EOF | sudo tee /etc/apache2/conf-available/optimization.conf
+<IfModule mpm_prefork_module>
+    StartServers         4
+    MinSpareServers      4
+    MaxSpareServers      10
+    MaxRequestWorkers    300
+    MaxConnectionsPerChild 10000
+</IfModule>
+EOF
+
+# Enable Apache optimization and restart
+sudo a2enconf optimization
+sudo systemctl restart apache2
+
+# Final service status check
+sudo systemctl status apache2
+sudo systemctl status mariadb
+
+echo "System optimized for 4 cores and 8GB RAM!"
