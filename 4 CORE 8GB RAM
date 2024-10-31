@@ -3,12 +3,12 @@
 # Backup existing PHP configuration before making changes
 sudo cp /etc/php/8.1/apache2/php.ini /etc/php/8.1/apache2/php.ini.backup-$(date +"%Y%m%d")
 
-# Optimize PHP settings for 4 cores and 8GB RAM
+# Optimize PHP settings for maximum resource utilization
 sudo sed -i "s/^memory_limit = .*/memory_limit = 2048M/" /etc/php/8.1/apache2/php.ini
-sudo sed -i "s/^upload_max_filesize = .*/upload_max_filesize = 200M/" /etc/php/8.1/apache2/php.ini
-sudo sed -i "s/^post_max_size = .*/post_max_size = 200M/" /etc/php/8.1/apache2/php.ini
-sudo sed -i "s/^max_execution_time = .*/max_execution_time = 600/" /etc/php/8.1/apache2/php.ini
-sudo sed -i "s/^max_input_time = .*/max_input_time = 600/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^upload_max_filesize = .*/upload_max_filesize = 100M/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^post_max_size = .*/post_max_size = 100M/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^max_execution_time = .*/max_execution_time = 120/" /etc/php/8.1/apache2/php.ini
+sudo sed -i "s/^max_input_time = .*/max_input_time = 120/" /etc/php/8.1/apache2/php.ini
 sudo sed -i "s/^max_input_vars = .*/max_input_vars = 3000/" /etc/php/8.1/apache2/php.ini
 
 # Restart Apache to apply the PHP changes
@@ -17,39 +17,39 @@ sudo systemctl restart apache2
 # Backup the existing MariaDB configuration before changes
 sudo cp /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup-$(date +"%Y%m%d")
 
-# Modify MariaDB settings to optimize for 8GB RAM
+# Modify MariaDB settings to fully utilize available resources
 cat <<EOF | sudo tee /etc/mysql/mariadb.conf.d/99-max-memory.cnf
 [mysqld]
-# Increase InnoDB buffer pool to 4GB (4096MB)
-innodb_buffer_pool_size = 4096M
+# Set InnoDB buffer pool size to 3GB (leave room for Apache and PHP)
+innodb_buffer_pool_size = 3072M
 
-# Increase log buffer size
-innodb_log_buffer_size = 64M
+# Set log buffer size for efficient transaction handling
+innodb_log_buffer_size = 32M
 
-# Enable query cache and increase size
-query_cache_size = 128M
-query_cache_limit = 4M
+# Disable query cache
+query_cache_size = 0
+query_cache_type = 0
 
-# Increase temporary table size
-tmp_table_size = 128M
-max_heap_table_size = 128M
+# Temporary table size and heap size for large queries
+tmp_table_size = 256M
+max_heap_table_size = 256M
 
-# Increase max connections to support more concurrent users
+# Max connections set for high concurrency
 max_connections = 250
 
-# Increase table cache size
-table_open_cache = 1000
+# Increase table cache size for high concurrent access
+table_open_cache = 2000
 EOF
 
 # Restart MariaDB to apply the changes
 sudo systemctl restart mariadb
 
-# Modify Apache settings to utilize 4 cores and 8GB RAM
+# Modify Apache settings to maximize concurrency and stability
 cat <<EOF | sudo tee /etc/apache2/conf-available/optimization.conf
 <IfModule mpm_prefork_module>
-    StartServers         4
-    MinSpareServers      4
-    MaxSpareServers      10
+    StartServers         6
+    MinSpareServers      6
+    MaxSpareServers      15
     MaxRequestWorkers    300
     MaxConnectionsPerChild 10000
 </IfModule>
@@ -63,4 +63,4 @@ sudo systemctl restart apache2
 sudo systemctl status apache2
 sudo systemctl status mariadb
 
-echo "System optimized for 4 cores and 8GB RAM!"
+echo "System fully optimized for high concurrency on 4 cores and 8GB RAM, with resource spare for monitoring and OS."
