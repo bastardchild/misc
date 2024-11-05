@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Update system packages
+# sudo apt update && sudo apt upgrade -y
+
+# Optimize PHP settings
+PHP_INI="/etc/php/8.1/apache2/php.ini"
+echo "Optimizing PHP settings in $PHP_INI"
+
+# Set memory limit and other settings
+sudo sed -i 's/^memory_limit = .*/memory_limit = 512M/' $PHP_INI
+sudo sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 50M/' $PHP_INI
+sudo sed -i 's/^post_max_size = .*/post_max_size = 50M/' $PHP_INI
+sudo sed -i 's/^max_execution_time = .*/max_execution_time = 300/' $PHP_INI
+sudo sed -i 's/^max_input_time = .*/max_input_time = 300/' $PHP_INI
+
+# Increase opcache settings for better performance
+OPCACHE_INI="/etc/php/8.1/apache2/conf.d/10-opcache.ini"
+echo "Optimizing OPcache settings in $OPCACHE_INI"
+sudo sed -i 's/^opcache.memory_consumption = .*/opcache.memory_consumption = 128/' $OPCACHE_INI
+sudo sed -i 's/^opcache.interned_strings_buffer = .*/opcache.interned_strings_buffer = 8/' $OPCACHE_INI
+sudo sed -i 's/^opcache.max_accelerated_files = .*/opcache.max_accelerated_files = 10000/' $OPCACHE_INI
+sudo sed -i 's/^opcache.revalidate_freq = .*/opcache.revalidate_freq = 2/' $OPCACHE_INI
+sudo sed -i 's/^opcache.fast_shutdown = .*/opcache.fast_shutdown = 1/' $OPCACHE_INI
+
+# Restart Apache to apply changes
+sudo systemctl restart apache2
+
+# Optimize MariaDB settings
+MARIADB_CONF="/etc/mysql/my.cnf"
+echo "Optimizing MariaDB settings in $MARIADB_CONF"
+
+# Backup original configuration
+sudo cp $MARIADB_CONF ${MARIADB_CONF}.bak
+
+# Add/modify settings
+sudo bash -c "cat <<EOL >> $MARIADB_CONF
+
+[mysqld]
+innodb_buffer_pool_size = 12G
+innodb_log_file_size = 512M
+innodb_flush_method = O_DIRECT
+innodb_file_per_table = 1
+max_connections = 300
+table_open_cache = 400
+thread_cache_size = 8
+EOL"
+
+# Restart MariaDB to apply changes
+sudo systemctl restart mariadb
+
+echo "Optimization complete! Please check for any errors in the logs."
