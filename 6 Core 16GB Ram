@@ -11,8 +11,8 @@ echo "Optimizing PHP settings in $PHP_INI"
 sudo sed -i 's/^memory_limit = .*/memory_limit = 512M/' $PHP_INI
 sudo sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 50M/' $PHP_INI
 sudo sed -i 's/^post_max_size = .*/post_max_size = 50M/' $PHP_INI
-sudo sed -i 's/^max_execution_time = .*/max_execution_time = 300/' $PHP_INI
-sudo sed -i 's/^max_input_time = .*/max_input_time = 300/' $PHP_INI
+sudo sed -i 's/^max_execution_time = .*/max_execution_time = 120/' $PHP_INI
+sudo sed -i 's/^max_input_time = .*/max_input_time = 120/' $PHP_INI
 
 # Increase opcache settings for better performance
 OPCACHE_INI="/etc/php/8.1/apache2/conf.d/10-opcache.ini"
