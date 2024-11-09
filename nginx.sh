@@ -116,4 +116,4 @@ sudo systemctl restart nginx
 # Install glances for monitoring system resources
 sudo apt install glances -y
 
-echo "LEMP stack (Nginx, PHP-FPM 8.1, MariaDB) installed successfully!"
+echo "Starter stack installed successfully!"
