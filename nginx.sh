@@ -60,8 +60,8 @@ sudo cp /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-ser
 # Add memory optimization settings for MariaDB
 cat <<EOF | sudo tee -a /etc/mysql/my.cnf
 [mysqld]
-# Allocate 1GB (1024MB) to InnoDB buffer pool
-innodb_buffer_pool_size = 1024M
+# Allocate InnoDB buffer pool
+innodb_buffer_pool_size = 512M
 
 # Log buffer size for transactional workloads
 innodb_log_buffer_size = 64M
