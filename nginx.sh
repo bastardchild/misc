@@ -58,7 +58,7 @@ sudo systemctl restart php8.1-fpm
 sudo cp /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup
 
 # Add memory optimization settings for MariaDB
-cat <<EOF | sudo tee /etc/mysql/mariadb.conf.d/99-max-memory.cnf
+cat <<EOF | sudo tee -a /etc/mysql/my.cnf
 [mysqld]
 # Allocate 1GB (1024MB) to InnoDB buffer pool
 innodb_buffer_pool_size = 1024M
@@ -66,7 +66,7 @@ innodb_buffer_pool_size = 1024M
 # Log buffer size for transactional workloads
 innodb_log_buffer_size = 64M
 
-# Enable query cache to speed up repeated queries
+# Disable query cache (as per modern best practices)
 query_cache_size = 0
 query_cache_limit = 0
 
