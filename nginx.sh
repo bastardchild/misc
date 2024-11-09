@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Update system packages
-sudo apt update && sudo apt upgrade -y
+# sudo apt update && sudo apt upgrade -y
+sudo apt update
 
 # Install Nginx
 sudo apt install nginx -y
